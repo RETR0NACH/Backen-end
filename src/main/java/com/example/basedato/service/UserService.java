@@ -3,6 +3,7 @@ package com.example.basedato.service;
 import com.example.basedato.model.User;
 import com.example.basedato.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder; // Importación necesaria
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -13,33 +14,39 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // Obtener todos los usuarios (útil para el panel de admin)
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
+    @Autowired
+    private PasswordEncoder passwordEncoder; // <-- Inyección del codificador
 
-    // Obtener un usuario por su ID
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
-    }
-
-    // Obtener un usuario por su EMAIL (¡Esto es vital para el Login!)
-    public Optional<User> getUserByEmail(String email) {
+    public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    // Guardar o actualizar un usuario (para Registro o Edición)
-    public User saveUser(User user) {
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    // Lógica para registrar un nuevo usuario con cifrado de contraseña
+    public User registerUser(User user) {
+        if (findByEmail(user.getEmail()).isPresent()) {
+            throw new RuntimeException("El email ya está registrado");
+        }
+
+        // Cifrar la contraseña antes de guardar
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRol("CLIENTE"); // Asignar el rol CLILENTE por defecto
+
         return userRepository.save(user);
     }
 
-    // Eliminar un usuario
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    public User update(User user) {
+        return userRepository.save(user);
     }
 
-    // Validar si existe un email (útil para no crear duplicados al registrarse)
-    public boolean existsByEmail(String email) {
-        return userRepository.findByEmail(email).isPresent();
+    public void deleteById(Long id) {
+        userRepository.deleteById(id);
     }
 }
