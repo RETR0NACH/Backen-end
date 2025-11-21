@@ -70,7 +70,7 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // Ya no necesitas el .and() explícito, la cadena se construye con los lambdas
+        // Ya no necesitas el .and() explícito,x la cadena se construye con los lambdas
         return http.build();
     }
 
