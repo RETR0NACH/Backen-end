@@ -51,7 +51,7 @@ public class SecurityConfig {
                         .permitAll()
 
                         // Rutas de la tienda: Permite a todos ver los productos
-                        .requestMatchers("/api/v1/product/**").permitAll() //
+                        .requestMatchers("/api/v1/products/**").permitAll() //
 
                         // Rutas protegidas por rol (ejemplo)
                         .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
