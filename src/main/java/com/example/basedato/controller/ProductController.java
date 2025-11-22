@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/products") // Define la ruta base: http://localhost:8080/api/v1/products
+@RequestMapping("/api/v1/products")
 public class ProductController {
 
     @Autowired
