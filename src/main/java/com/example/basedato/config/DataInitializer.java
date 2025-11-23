@@ -15,28 +15,28 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            String email = "superadmin@growshop.cl";
-            String pass = "admin123";
+            String email = "andromeda@growshop.cl"; // Tu correo de admin original
+            String password = "admin123";
 
             Optional<User> existingAdmin = userRepository.findByEmail(email);
 
-            if (existingAdmin.isEmpty()) {
-                // Crear si no existe
+            if (existingAdmin.isPresent()) {
+                // SI YA EXISTE: Forzamos la actualización de la contraseña
+                User admin = existingAdmin.get();
+                admin.setPassword(passwordEncoder.encode(password));
+                admin.setRol("admin");
+                userRepository.save(admin);
+                System.out.println("✅ ADMIN RECUPERADO: Contraseña actualizada para " + email);
+            } else {
+                // SI NO EXISTE: Lo creamos desde cero
                 User admin = new User();
-                admin.setNombre("Super");
+                admin.setNombre("Andromeda");
                 admin.setApellido("Admin");
                 admin.setEmail(email);
-                admin.setPassword(passwordEncoder.encode(pass));
+                admin.setPassword(passwordEncoder.encode(password));
                 admin.setRol("admin");
                 userRepository.save(admin);
                 System.out.println("✅ ADMIN CREADO: " + email);
-            } else {
-                // SI EXISTE, ACTUALIZAMOS LA CONTRASEÑA PARA ASEGURARNOS QUE FUNCIONE
-                User admin = existingAdmin.get();
-                admin.setPassword(passwordEncoder.encode(pass));
-                admin.setRol("admin"); // Aseguramos el rol
-                userRepository.save(admin);
-                System.out.println("🔄 ADMIN ACTUALIZADO: " + email);
             }
         };
     }
