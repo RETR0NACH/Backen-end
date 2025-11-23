@@ -13,20 +13,19 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            // Verificar si ya existe el admin para no duplicarlo
-            if (userRepository.findByEmail("andromeda@growshop.cl").isEmpty()) {
+            // CAMBIAMOS EL CORREO PARA FORZAR LA CREACIÓN DE UN NUEVO ADMIN LIMPIO
+            String adminEmail = "superadmin@growshop.cl"; // <--- CAMBIO AQUÍ
+
+            if (userRepository.findByEmail(adminEmail).isEmpty()) {
                 User admin = new User();
-                admin.setNombre("Andromeda");
+                admin.setNombre("Super");
                 admin.setApellido("Admin");
-                admin.setEmail("andromeda@growshop.cl");
-                // Aquí encriptamos la contraseña automáticamente
+                admin.setEmail(adminEmail);
                 admin.setPassword(passwordEncoder.encode("admin123"));
-                admin.setRol("admin"); // Rol exacto que espera tu frontend
+                admin.setRol("admin");
 
                 userRepository.save(admin);
-                System.out.println("Usuario Admin creado: andromeda@growshop.cl / admin123");
-            } else {
-                System.out.println("El usuario Admin ya existe.");
+                System.out.println("✅ NUEVO ADMIN CREADO: " + adminEmail);
             }
         };
     }
