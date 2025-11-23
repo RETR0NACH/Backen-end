@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
@@ -37,8 +38,6 @@ public class SecurityConfig {
         http
                 // 1. Deshabilitar CSRF
                 .csrf(csrf -> csrf.disable())
-
-                // NOTA: Hemos quitado .cors() de aquí para usar el filtro de alta prioridad abajo
 
                 // 2. Reglas de Autorización
                 .authorizeHttpRequests(auth -> auth
@@ -69,38 +68,33 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // --- SOLUCIÓN DEFINITIVA PARA CORS ---
-    // Este filtro se ejecuta ANTES que la seguridad de Spring.
     @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-        // 1. Permitir credenciales (Tokens/Cookies)
-        config.setAllowCredentials(true);
 
-        // 2. Dominios permitidos (Asegúrate de que tu URL de Vercel esté bien escrita aquí)
-        config.setAllowedOrigins(Arrays.asList(
+        configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
                 "http://localhost:3000",
                 "http://localhost:8080",
-                "https://andromeda-s-inn-shop-lg6n.vercel.app" // <--- Tu URL de Vercel
+                "https://andromeda-s-inn-shop-lg6n.vercel.app"
+
         ));
 
-        // 3. Headers permitidos (Todo)
-        config.setAllowedHeaders(Arrays.asList(
-                "Origin", "Content-Type", "Accept", "Authorization",
-                "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"
-        ));
+        // CAMBIO CLAVE 1: Permitir TODOS los métodos
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
 
-        // 4. Métodos permitidos (Todo)
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        // CAMBIO CLAVE 2: Permitir TODAS las cabeceras (Evita bloqueos por headers ocultos)
+        configuration.setAllowedHeaders(Arrays.asList("*"));
 
-        source.registerCorsConfiguration("/**", config);
+        // CAMBIO CLAVE 3: Exponer cabeceras para que el frontend las lea si hay error
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
 
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-        // Esto le da la prioridad máxima: Se ejecuta primero que todo
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return bean;
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
+
 }
