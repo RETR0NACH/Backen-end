@@ -17,7 +17,7 @@ import java.util.function.Function;
 public class JwtTokenProvider {
 
     // CAMBIA ESTA CLAVE SECRETA POR UNA MUCHO MÁS LARGA Y COMPLEJA EN PRODUCCIÓN
-    private static final String SECRET_KEY = "dHVfY2xhdmVfc2VjcmV0YV9zdXBlcl9sYXJnYV95X2RpZmljaWxfcXVlX25hZGllX2FkaXZpbmFyYV9wb3JfZmF2b3JfY2FtYmlhbGE=";
+    private static final String SECRET_KEY = "RXN0YUVzVW5hQ2xhdmVTZWNyZXRhTXV5U2VndXJhUGFyYVR1UHJveWVjdG8xMjM0NTY3ODkwIQ==";
     private static final long JWT_EXPIRATION_MS = 1000 * 60 * 60 * 24; // 24 horas
 
     // 1. Extrae un claim específico del token
