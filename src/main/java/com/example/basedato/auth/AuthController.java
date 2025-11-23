@@ -27,13 +27,12 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
         try {
-            // Convertimos el DTO a la entidad User manualmente
+            // Convertimos manualmente
             User newUser = new User();
             newUser.setNombre(request.getNombre());
             newUser.setApellido(request.getApellido());
             newUser.setEmail(request.getEmail());
             newUser.setPassword(request.getPassword());
-            // El rol y la encriptación se manejan en el servicio
 
             User savedUser = userService.registerUser(newUser);
             String token = tokenProvider.generateToken(savedUser);
