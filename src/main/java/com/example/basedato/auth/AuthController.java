@@ -1,9 +1,8 @@
 package com.example.basedato.auth;
 
 import com.example.basedato.model.User;
-import com.example.basedato.security.jwt.JwtTokenProvider;
 import com.example.basedato.service.UserService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,39 +11,34 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-// Crea los DTOs: AuthRequest (email, password) y AuthResponse (token, id, email, rol)
-
 @RestController
 @RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider tokenProvider;
+    @Autowired
+    private UserService userService;
 
-    // Endpoint de registro
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    // Registro se mantiene casi igual, pero sin generar token
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
         try {
-            // 1. Crear el usuario manualmente con los datos simples que llegan
             User newUser = new User();
             newUser.setNombre(request.getNombre());
             newUser.setApellido(request.getApellido());
             newUser.setEmail(request.getEmail());
             newUser.setPassword(request.getPassword());
 
-            // 2. El servicio se encarga de cifrar la clave y asignar rol
             User savedUser = userService.registerUser(newUser);
 
-            // 3. Generar token
-            String token = tokenProvider.generateToken(savedUser);
-
+            // Devolvemos el usuario creado sin token
             return ResponseEntity.ok(AuthResponse.builder()
-                    .token(token)
                     .id(savedUser.getId())
                     .email(savedUser.getEmail())
                     .rol(savedUser.getRol())
+                    .token("BASIC_AUTH") // Valor dummy para no romper tu frontend si espera un string
                     .build());
 
         } catch (RuntimeException e) {
@@ -52,27 +46,23 @@ public class AuthController {
         }
     }
 
-    // Endpoint de login
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
-        // 1. Autenticar usando Spring Security (lanza excepción si falla)
+        // Esto verifica si el usuario y contraseña son reales en la BD
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
 
-        // 2. Establecer la autenticación en el contexto de seguridad
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        User userDetails = (User) authentication.getPrincipal();
 
-        // 3. Generar el token JWT
-        User userDetails = (User) authentication.getPrincipal(); // Castea a tu clase User
-        String token = tokenProvider.generateToken(userDetails);
-
-        // 4. Retornar la respuesta con el token y datos del usuario
+        // Retornamos los datos del usuario.
+        // NOTA: Ya no enviamos un token real, el frontend guardará la contraseña encriptada en base64.
         return ResponseEntity.ok(AuthResponse.builder()
-                .token(token)
                 .id(userDetails.getId())
                 .email(userDetails.getEmail())
                 .rol(userDetails.getRol())
+                .token("BASIC_AUTH")
                 .build());
     }
 }
