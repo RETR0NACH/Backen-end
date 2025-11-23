@@ -11,7 +11,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // Desactivar CSRF es común en APIs REST sin estado (stateless)
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/products/**").permitAll()
@@ -22,5 +21,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 }
