@@ -41,7 +41,8 @@ public class SecurityConfig {
 
         // USAMOS PATRONES (*) PARA ACEPTAR CUALQUIER SUBDOMINIO DE VERCEL
         configuration.setAllowedOriginPatterns(Arrays.asList(
-                "https://*.vercel.app", // Esto arregla tu problema de URLs cambiantes
+                "https://andromeda-s-inn-shop-3eva.vercel.app",
+                "https://*.vercel.app",
                 "http://localhost:*"
         ));
 
