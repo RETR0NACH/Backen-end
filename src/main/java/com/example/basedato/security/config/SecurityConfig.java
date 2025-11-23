@@ -22,15 +22,14 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // El registro debe ser público
-                        .requestMatchers("/api/v1/auth/register").permitAll()
+                        // Rutas públicas
+                        .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/products/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        // Todo lo demás requiere autenticación (usuario y contraseña en cada petición)
+                        // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 )
-                .httpBasic(Customizer.withDefaults()); // <--- ESTO ACTIVA BASIC AUTH
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }
@@ -38,10 +37,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-                "https://*.vercel.app",
-                "http://localhost:*"
-        ));
+        configuration.setAllowedOriginPatterns(Arrays.asList("https://*.vercel.app", "http://localhost:*","https://andromeda-s-inn-shop-3eva.vercel.app/"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

@@ -38,7 +38,7 @@ public class AuthController {
                     .id(savedUser.getId())
                     .email(savedUser.getEmail())
                     .rol(savedUser.getRol())
-                    .token("BASIC_AUTH") // Valor dummy para no romper tu frontend si espera un string
+                    .token("BASIC") // Dummy text
                     .build());
 
         } catch (RuntimeException e) {
