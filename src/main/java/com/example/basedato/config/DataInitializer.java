@@ -25,7 +25,7 @@ public class DataInitializer {
                 admin.setRol("admin");
 
                 userRepository.save(admin);
-                System.out.println("✅ NUEVO ADMIN CREADO: " + adminEmail);
+                System.out.println(" NUEVO ADMIN CREADO: " + adminEmail);
             }
         };
     }
