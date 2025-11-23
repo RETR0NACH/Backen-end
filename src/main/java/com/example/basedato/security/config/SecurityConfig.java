@@ -14,10 +14,10 @@ public class SecurityConfig {
                 // Desactivar CSRF es común en APIs REST sin estado (stateless)
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Permitir acceso total a productos y autenticación
-                        .requestMatchers("/api/products/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // Cualquier otra cosa requiere autenticación (opcional por ahora)
+                        .requestMatchers("/api/v1/products/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        // Swagger UI (Opcional, pero recomendado dejarlo abierto)
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .anyRequest().permitAll()
                 );
 

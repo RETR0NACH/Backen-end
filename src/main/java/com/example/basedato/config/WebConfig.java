@@ -12,7 +12,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**") // Aplica a todas las rutas de tu API
-                        .allowedOrigins("https://andromeda-s-inn-shop-lg6n.vercel.app")
+                        .allowedOrigins("https://andromeda-s-inn-shop-lg6n.vercel.app","http://localhost:5173")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
