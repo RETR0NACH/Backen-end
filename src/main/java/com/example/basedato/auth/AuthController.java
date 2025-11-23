@@ -23,21 +23,26 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
 
-    // Endpoint de registro (usado por RegisterPage.jsx)
+    // Endpoint de registro
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User registrationRequest) {
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
         try {
-            User newUser = userService.registerUser(registrationRequest);
+            // Convertimos el DTO a la entidad User manualmente
+            User newUser = new User();
+            newUser.setNombre(request.getNombre());
+            newUser.setApellido(request.getApellido());
+            newUser.setEmail(request.getEmail());
+            newUser.setPassword(request.getPassword());
+            // El rol y la encriptación se manejan en el servicio
 
-            // Generar el token inmediatamente después del registro
-            String token = tokenProvider.generateToken(newUser);
+            User savedUser = userService.registerUser(newUser);
+            String token = tokenProvider.generateToken(savedUser);
 
-            // Retornar la respuesta al frontend
             return ResponseEntity.ok(AuthResponse.builder()
                     .token(token)
-                    .id(newUser.getId())
-                    .email(newUser.getEmail())
-                    .rol(newUser.getRol())
+                    .id(savedUser.getId())
+                    .email(savedUser.getEmail())
+                    .rol(savedUser.getRol())
                     .build());
 
         } catch (RuntimeException e) {
@@ -45,7 +50,7 @@ public class AuthController {
         }
     }
 
-    // Endpoint de login (usado por LoginPage.jsx)
+    // Endpoint de login
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
         // 1. Autenticar usando Spring Security (lanza excepción si falla)
