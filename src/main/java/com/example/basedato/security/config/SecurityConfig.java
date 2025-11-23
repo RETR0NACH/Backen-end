@@ -16,7 +16,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/products/**").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        // Swagger UI (Opcional, pero recomendado dejarlo abierto)
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .anyRequest().permitAll()
                 );
