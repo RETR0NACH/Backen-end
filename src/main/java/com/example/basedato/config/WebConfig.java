@@ -1,4 +1,4 @@
-package com.example.basedato.security.config;
+package com.example.basedato.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**") // Aplica a todas las rutas de tu API
-                        .allowedOrigins("http://localhost:5173", "http://localhost:3000","https://andromeda-s-inn-shop-lg6n.vercel.app")
+                        .allowedOrigins("https://andromeda-s-inn-shop-lg6n.vercel.app")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
