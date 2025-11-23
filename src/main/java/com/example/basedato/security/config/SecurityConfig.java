@@ -1,9 +1,10 @@
 package com.example.basedato.security.config;
 
-// ... (Las importaciones se mantienen)
-
+import com.example.basedato.security.jwt.JwtAuthenticationFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,13 +12,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-// Importaciones para CORS (mantener)
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import com.example.basedato.security.jwt.JwtAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -35,63 +35,72 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. DESHABILITAR CSRF (Sintaxis moderna)
+                // 1. Deshabilitar CSRF
                 .csrf(csrf -> csrf.disable())
 
-                // 2. APLICAR CORS (Sintaxis moderna, usando el bean corsConfigurationSource)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // NOTA: Hemos quitado .cors() de aquí para usar el filtro de alta prioridad abajo
 
-                // 3. DEFINIR REGLAS DE AUTORIZACIÓN
+                // 2. Reglas de Autorización
                 .authorizeHttpRequests(auth -> auth
-                        // Rutas públicas: Auth, Swagger
+                        // Rutas públicas (Swagger, Auth)
                         .requestMatchers("/api/v1/auth/**", "/v2/api-docs", "/v3/api-docs/**",
-                                "/swagger-resources", "/swagger-resources/**",
-                                "/configuration/ui", "/configuration/security",
-                                "/swagger-ui.html", "/swagger-ui/**", "/webjars/**")
-                        .permitAll()
+                                "/swagger-resources/**", "/configuration/**", "/swagger-ui/**",
+                                "/webjars/**", "/swagger-ui.html").permitAll()
 
-                        // Rutas de la tienda: Permite a todos ver los productos
-                        .requestMatchers("/api/v1/products/**").permitAll() //
+                        // Catálogo público
+                        .requestMatchers("/api/v1/products/**").permitAll()
 
-                        // Rutas protegidas por rol (ejemplo)
+                        // Rutas de Admin
                         .requestMatchers("/api/v1/admin/**").hasAuthority("ADMIN")
 
-                        // Cualquier otra petición requiere autenticación
+                        // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 )
 
-                // 4. CONFIGURAR GESTIÓN DE SESIONES
+                // 3. Gestión de Sesión (Stateless)
                 .sessionManagement(session -> session
-                        // Importante: No usar sesiones de estado (STATELWESS)
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 5. AGREGAR FILTRO JWT Y PROVEEDOR DE AUTENTICACIÓN
+                // 4. Filtro JWT
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // Ya no necesitas el .and() explícito,x la cadena se construye con los lambdas
         return http.build();
     }
 
-    // El Bean de CORS se mantiene igual
+    // --- SOLUCIÓN DEFINITIVA PARA CORS ---
+    // Este filtro se ejecuta ANTES que la seguridad de Spring.
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
+    public FilterRegistrationBean<CorsFilter> corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(Arrays.asList(
+        // 1. Permitir credenciales (Tokens/Cookies)
+        config.setAllowCredentials(true);
+
+        // 2. Dominios permitidos (Asegúrate de que tu URL de Vercel esté bien escrita aquí)
+        config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
                 "http://localhost:3000",
                 "http://localhost:8080",
-                "https://andromeda-s-inn-shop-lg6n.vercel.app"
+                "https://andromeda-s-inn-shop-lg6n.vercel.app" // <--- Tu URL de Vercel
         ));
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true);
+        // 3. Headers permitidos (Todo)
+        config.setAllowedHeaders(Arrays.asList(
+                "Origin", "Content-Type", "Accept", "Authorization",
+                "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"
+        ));
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+        // 4. Métodos permitidos (Todo)
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        source.registerCorsConfiguration("/**", config);
+
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+        // Esto le da la prioridad máxima: Se ejecuta primero que todo
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return bean;
     }
 }
