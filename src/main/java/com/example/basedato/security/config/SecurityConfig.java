@@ -29,6 +29,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/products/**").permitAll()
                         .requestMatchers("/api/v1/users/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 );
 
@@ -42,7 +43,6 @@ public class SecurityConfig {
         // USAMOS PATRONES (*) PARA ACEPTAR CUALQUIER SUBDOMINIO DE VERCEL
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "https://andromeda-s-inn-shop-3eva.vercel.app",
-                "https://*.vercel.app",
                 "http://localhost:*"
         ));
 
