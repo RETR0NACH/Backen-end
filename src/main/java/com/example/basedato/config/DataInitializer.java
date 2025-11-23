@@ -7,25 +7,36 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 @Configuration
 public class DataInitializer {
 
     @Bean
     public CommandLineRunner initAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            // CAMBIAMOS EL CORREO PARA FORZAR LA CREACIÓN DE UN NUEVO ADMIN LIMPIO
-            String adminEmail = "superadmin@growshop.cl"; // <--- CAMBIO AQUÍ
+            String email = "superadmin@growshop.cl";
+            String pass = "admin123";
 
-            if (userRepository.findByEmail(adminEmail).isEmpty()) {
+            Optional<User> existingAdmin = userRepository.findByEmail(email);
+
+            if (existingAdmin.isEmpty()) {
+                // Crear si no existe
                 User admin = new User();
                 admin.setNombre("Super");
                 admin.setApellido("Admin");
-                admin.setEmail(adminEmail);
-                admin.setPassword(passwordEncoder.encode("admin123"));
+                admin.setEmail(email);
+                admin.setPassword(passwordEncoder.encode(pass));
                 admin.setRol("admin");
-
                 userRepository.save(admin);
-                System.out.println(" NUEVO ADMIN CREADO: " + adminEmail);
+                System.out.println("✅ ADMIN CREADO: " + email);
+            } else {
+                // SI EXISTE, ACTUALIZAMOS LA CONTRASEÑA PARA ASEGURARNOS QUE FUNCIONE
+                User admin = existingAdmin.get();
+                admin.setPassword(passwordEncoder.encode(pass));
+                admin.setRol("admin"); // Aseguramos el rol
+                userRepository.save(admin);
+                System.out.println("🔄 ADMIN ACTUALIZADO: " + email);
             }
         };
     }

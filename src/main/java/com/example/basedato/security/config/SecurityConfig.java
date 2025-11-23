@@ -15,16 +15,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. IMPORTANTE: Decirle a Security que use la configuración CORS de MVC
+                // Conecta con el CorsFilter de WebConfig
                 .cors(Customizer.withDefaults())
 
-                // 2. Desactivar CSRF (Necesario para API)
+                // Desactivar CSRF (Vital para Login/Register)
                 .csrf(csrf -> csrf.disable())
 
-                // 3. Sesión Stateless
+                // Sesión sin estado
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 4. Rutas Públicas (Asegúrate que coincidan con tus controladores)
+                // Rutas públicas
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/products/**").permitAll()
