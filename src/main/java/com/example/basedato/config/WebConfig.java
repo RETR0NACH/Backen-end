@@ -15,7 +15,7 @@ public class WebConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Aplica a toda la aplicación
                         .allowedOrigins(
-                                "https://andromeda-s-inn-shop-lg6n.vercel.app", // Tu Frontend en Vercel
+                                "https://andromeda-s-inn-shop-3eva.vercel.app/", // Tu Frontend en Vercel
                                 "http://localhost:5173", // Tu Frontend local
                                 "http://localhost:3000"
                         )
