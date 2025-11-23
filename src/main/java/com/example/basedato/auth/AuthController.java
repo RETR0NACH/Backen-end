@@ -27,14 +27,17 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
         try {
-            // Convertimos manualmente
+            // 1. Crear el usuario manualmente con los datos simples que llegan
             User newUser = new User();
             newUser.setNombre(request.getNombre());
             newUser.setApellido(request.getApellido());
             newUser.setEmail(request.getEmail());
             newUser.setPassword(request.getPassword());
 
+            // 2. El servicio se encarga de cifrar la clave y asignar rol
             User savedUser = userService.registerUser(newUser);
+
+            // 3. Generar token
             String token = tokenProvider.generateToken(savedUser);
 
             return ResponseEntity.ok(AuthResponse.builder()
