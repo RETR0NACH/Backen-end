@@ -49,21 +49,25 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest loginRequest) {
-        // Esto verifica si el usuario y contraseña son reales en la BD
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
-        );
+        try {
+            // Intentamos autenticar
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        User userDetails = (User) authentication.getPrincipal();
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            User userDetails = (User) authentication.getPrincipal();
 
-        // Retornamos los datos del usuario.
-        // NOTA: Ya no enviamos un token real, el frontend guardará la contraseña encriptada en base64.
-        return ResponseEntity.ok(AuthResponse.builder()
-                .id(userDetails.getId())
-                .email(userDetails.getEmail())
-                .rol(userDetails.getRol())
-                .token("BASIC_AUTH")
-                .build());
+            return ResponseEntity.ok(AuthResponse.builder()
+                    .id(userDetails.getId())
+                    .email(userDetails.getEmail())
+                    .rol(userDetails.getRol())
+                    .token("BASIC_AUTH")
+                    .build());
+
+        } catch (Exception e) {
+            // Si falla (contraseña mal, usuario no existe), devolvemos 401 CLARO
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales incorrectas: " + e.getMessage());
+        }
     }
 }
