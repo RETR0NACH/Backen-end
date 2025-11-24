@@ -35,9 +35,15 @@ public class UserService {
             throw new RuntimeException("El email ya está registrado");
         }
 
-        // Cifrar la contraseña antes de guardar
+        // Cifrar contraseña
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRol("CLIENTE"); // Asignar el rol CLILENTE por defecto
+
+        // Asignar rol: Si viene vacío, es CLIENTE. Si no, se usa el que viene (ej: ADMIN)
+        if (user.getRol() == null || user.getRol().isEmpty()) {
+            user.setRol("CLIENTE");
+        } else {
+            user.setRol(user.getRol().toUpperCase()); // Asegurar mayúsculas
+        }
 
         return userRepository.save(user);
     }

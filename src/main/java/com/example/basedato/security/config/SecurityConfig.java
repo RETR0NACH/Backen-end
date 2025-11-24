@@ -9,6 +9,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
 
@@ -22,11 +23,21 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Rutas públicas
-                        .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll()
-                        .requestMatchers("/api/v1/products/**").permitAll()
+                        // 1. Rutas públicas (Login, Registro, Catálogo, Errores)
+                        .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        // Todo lo demás requiere autenticación
+                        .requestMatchers("/api/v1/products/**").permitAll()
+
+                        // 2. Rutas Exclusivas de ADMIN
+                        // Gestión de usuarios (Ver, Editar, Borrar) -> Solo Admin
+                        .requestMatchers("/api/v1/users/**").hasAuthority("ADMIN")
+
+                        // CORRECCIÓN AQUÍ:
+                        // Solo el Admin puede VER (GET) todos los pedidos
+                        .requestMatchers(HttpMethod.GET, "/api/v1/orders").hasAuthority("ADMIN")
+
+                        // 3. El resto requiere estar logueado (Cualquier rol: CLIENTE o ADMIN)
+                        // Esto incluye POST /api/v1/orders (Comprar)
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
